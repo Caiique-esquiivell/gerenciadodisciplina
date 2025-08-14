@@ -1,5 +1,6 @@
 package br.com.gerenciadorhorarios.view;
 
+import br.com.gerenciadorhorarios.models.GridBagConstraintsBuilding;
 import br.com.gerenciadorhorarios.models.Usuario;
 import br.com.gerenciadorhorarios.controller.BancoDeUsuarios;
 import br.com.gerenciadorhorarios.controller.Navegador;
@@ -27,52 +28,55 @@ public class TelaLogin extends JFrame {
         this.setLocationRelativeTo((Component)null);
         this.setDefaultCloseOperation(3);
         this.setLayout(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 10, 5, 10);
         this.campoUsuario = new JTextField(15);
         this.campoSenha = new JPasswordField(15);
         this.botaoEntrar = new JButton("Entrar");
         this.botaoCadastrar = new JButton("Cadastramento");
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.anchor = 22;
-        this.add(new JLabel("Usuário:"), gbc);
-        gbc.gridx = 1;
-        gbc.anchor = 21;
-        this.add(this.campoUsuario, gbc);
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        gbc.anchor = 22;
-        this.add(new JLabel("Senha:"), gbc);
-        gbc.gridx = 1;
-        gbc.anchor = 21;
-        this.add(this.campoSenha, gbc);
-        gbc.gridx = 0;
-        gbc.gridy = 2;
-        gbc.gridwidth = 2;
-        gbc.anchor = 10;
-        this.add(this.botaoEntrar, gbc);
-        gbc.gridy = 3;
-        this.add(this.botaoCadastrar, gbc);
-        this.botaoEntrar.addActionListener((e) -> this.validarLogin());
+        Insets gbcInsets = new Insets(5, 10,5, 10);
+        this.add(new JLabel("Usuário:"),
+                new GridBagConstraintsBuilding.Builder().insets(gbcInsets).gridy(0).gridx(0).anchor(13).build());
+        this.add(this.campoUsuario,
+                new GridBagConstraintsBuilding.Builder().insets(gbcInsets).gridx(1).gridy(0).weightx(1.0).fill(2).anchor(17).build());
+        this.add(new JLabel("Senha:"),
+                new GridBagConstraintsBuilding.Builder().insets(gbcInsets).gridx(0).gridy(1).anchor(13).build());
+        this.add(this.campoSenha,
+                new GridBagConstraintsBuilding.Builder().insets(gbcInsets).gridx(1).gridy(1).weightx(1.0).fill(2).anchor(17).build());
+        this.add(this.botaoEntrar,
+                new GridBagConstraintsBuilding.Builder().insets(gbcInsets).gridx(0).gridy(2).gridwidth(2).build());
+        this.add(this.botaoCadastrar,
+                new GridBagConstraintsBuilding.Builder().insets(gbcInsets).gridy(3).gridy(3).gridwidth(2).build());
+        this.botaoEntrar.addActionListener((e) -> this.tratamentoExcecao());
         botaoCadastrar.addActionListener(e ->
                 Navegador.trocarTela(this, new TelaCadastramento())
         );
         this.setVisible(true);
     }
 
-    public void validarLogin() {
-        String user = this.campoUsuario.getText();
-        String senha = new String(this.campoSenha.getPassword());
-        Usuario autenticado = BancoDeUsuarios.autenticar(user, senha);
-        if (autenticado != null) {
-            Navegador.trocarTela(this, new TelaPrincipal(autenticado));
-        }
-        else {
+    public void tratamentoExcecao(){
+        //verifica se ha excecao propagada por validarLogin
+        try{
+            validarLogin();
+        } catch (NullPointerException e){
             JOptionPane.showMessageDialog(this, "Usuário ou senha incorretos!");
         }
-
     }
+
+    public void validarLogin() throws NullPointerException {
+
+        /* coleta dados de campoUsario e campoSenha passados pelo usuario
+        faz uso do metodo autenticar da class BancodeUsuarios para
+        verificar se os dados passados se encontram no banco e
+        lanca excepetion se o metodo retornar um valor null*/
+
+        String user = this.campoUsuario.getText();
+        String senha = new String(this.campoSenha.getPassword());
+
+        if(BancoDeUsuarios.autenticar(user, senha) == null)
+            throw new NullPointerException(); // excecao e propagada para TramentoExcecao
+        Navegador.trocarTela(this,
+                new TelaPrincipal(BancoDeUsuarios.autenticar(user, senha)));
+    }
+
 
 }
 
